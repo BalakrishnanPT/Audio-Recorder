@@ -13,6 +13,7 @@ import java.io.IOException
 import java.util.*
 
 class AudioRecorder(private var fileDirectory: String) {
+
     private var singleFile = true
     private var recorder: MediaRecorder? = null
     private val files = ArrayList<String>()
@@ -42,7 +43,14 @@ class AudioRecorder(private var fileDirectory: String) {
     }
 
      val recordStatus = MutableStateFlow(State.IDLE)
+    val clockTimer = ClockTimer(1000L)
 
+    fun setLimit(secods: Int, onLimitReached: () -> Unit = {}) {
+        clockTimer.setLimit(secods) {
+            stop()
+            onLimitReached()
+        }
+    }
 
     fun start(): Boolean {
         if (recordStatus.value != State.RESUMED || recordStatus.value != State.RESET)
@@ -78,6 +86,10 @@ class AudioRecorder(private var fileDirectory: String) {
         singleFile = false
         newRecorder()
         return start()
+    }
+
+    fun getFilePath(): String {
+        return audioFilePath ?: ""
     }
 
 
